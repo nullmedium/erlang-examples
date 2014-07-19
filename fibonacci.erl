@@ -1,0 +1,9 @@
+-module(fibonacci).
+-export([fib/1]).
+-export([start/0]).
+
+fib(0) -> 0;
+fib(1) -> 1;
+fib(N) -> fib(N-1) + fib(N-2).
+
+start() -> fib(10).
