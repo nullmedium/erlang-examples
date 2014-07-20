@@ -1,15 +1,24 @@
 -module(echo_server).
 -export([start/0]).
+-export([listener/1]).
 
 start() ->
+    io:format("Listening on port 1234 for connections... "),
 	case gen_tcp:listen(1234, [binary, {packet, 0}, {active, false}]) of
 	    {ok, LSock} ->
-	        {ok, Sock} = gen_tcp:accept(LSock),
-		    {ok, _} = do_recv(Sock, []),
-		    ok = gen_tcp:close(Sock);
+            spawn(fun() -> listener(LSock) end),
+            timer:sleep(infinity);
 	    {error,eaddrinuse} ->
-	    	io:format("Error: address in use")
+	    	io:format("Error: address in use\n")
 	end.
+
+listener(LSock) ->
+    {ok, Sock} = gen_tcp:accept(LSock),
+    io:format("Accepted connection on port 1234!\n"),
+    spawn(fun() -> listener(LSock) end),
+    {ok, _} = do_recv(Sock, []),
+    ok = gen_tcp:close(Sock),
+    io:format("Connection to client closed!\n").
 
 do_recv(Sock, Bs) ->
     case gen_tcp:recv(Sock, 0) of
